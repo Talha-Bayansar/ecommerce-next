@@ -18,8 +18,23 @@ export function CommerceProvider(props) {
     };
 
     const handleAddToCart = async (productId, quantity) => {
-        const item = await commerce.cart.add(productId, quantity);
-        setCart(item.cart);
+        const { cart } = await commerce.cart.add(productId, quantity);
+        setCart(cart);
+    };
+
+    const handleUpdateCartQty = async (productId, quantity) => {
+        const { cart } = await commerce.cart.update(productId, { quantity });
+        setCart(cart);
+    };
+
+    const handleRemoveFromCart = async (productId) => {
+        const { cart } = await commerce.cart.remove(productId);
+        setCart(cart);
+    };
+
+    const handleEmptyCart = async () => {
+        const { cart } = await commerce.cart.empty();
+        setCart(cart);
     };
 
     useEffect(() => {
@@ -31,6 +46,9 @@ export function CommerceProvider(props) {
         products,
         cart,
         handleAddToCart,
+        handleUpdateCartQty,
+        handleRemoveFromCart,
+        handleEmptyCart,
     };
 
     return (

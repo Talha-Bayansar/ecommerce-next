@@ -13,11 +13,11 @@ import Link from "next/link";
 
 const Cart = () => {
     const classes = useStyles();
-    const { cart } = useCommerce();
+    const { cart, handleEmptyCart } = useCommerce();
 
     const EmptyCart = () => (
         <Link href="/">
-            <Typography variant="subtitle1">
+            <Typography className={classes.link} variant="subtitle1">
                 You have no items in your shopping cart, start adding some!
             </Typography>
         </Link>
@@ -43,18 +43,21 @@ const Cart = () => {
                         type="button"
                         variant="contained"
                         color="secondary"
+                        onClick={handleEmptyCart}
                     >
                         Empty Cart
                     </Button>
-                    <Button
-                        className={classes.checkoutButton}
-                        size="large"
-                        type="button"
-                        variant="contained"
-                        color="primary"
-                    >
-                        Checkout
-                    </Button>
+                    <Link href="/checkout">
+                        <Button
+                            className={classes.checkoutButton}
+                            size="large"
+                            type="button"
+                            variant="contained"
+                            color="primary"
+                        >
+                            Checkout
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </>
