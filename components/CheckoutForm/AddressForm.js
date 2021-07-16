@@ -15,16 +15,15 @@ import { useEffect } from "react";
 import { useCommerce } from "../../contexts/useCommerce";
 import Link from "next/link";
 
-const AddressForm = () => {
+const AddressForm = ({ next }) => {
     const [shippingCountries, setShippingCountries] = useState([]);
     const [shippingCountry, setShippingCountry] = useState("");
     const [shippingSubdivisions, setShippingSubdivisions] = useState([]);
     const [shippingSubdivision, setShippingSubdivision] = useState("");
     const [shippingOptions, setShippingOptions] = useState([]);
     const [shippingOption, setShippingOption] = useState("");
-    const [token, setToken] = useState({});
+    const { token } = useCommerce();
     const methods = useForm();
-    const { cart } = useCommerce();
 
     const countries = Object.entries(shippingCountries).map(([code, name]) => ({
         id: code,
@@ -43,20 +42,15 @@ const AddressForm = () => {
         label: `${option.description} - (${option.price.formatted_with_symbol})`,
     }));
 
-    const fetchShippingCountries = async () => {
+    const fetchShippingCountries = async (tokenId) => {
         try {
-            const token = await commerce.checkout.generateToken(cart.id, {
-                type: "cart",
-            });
-
-            setToken(token);
-
             const { countries } =
-                await commerce.services.localeListShippingCountries(token.id);
-
+                await commerce.services.localeListShippingCountries(tokenId);
             setShippingCountries(countries);
             setShippingCountry(Object.keys(countries)[0]);
-        } catch (error) {}
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const fetchSubdivisions = async (countryCode) => {
@@ -81,7 +75,7 @@ const AddressForm = () => {
     };
 
     useEffect(() => {
-        fetchShippingCountries();
+        fetchShippingCountries(token.id);
     }, []);
 
     useEffect(() => {
@@ -89,6 +83,8 @@ const AddressForm = () => {
     }, [shippingCountry]);
 
     useEffect(() => {
+        console.log("refetch 3");
+
         shippingSubdivision &&
             fetchShippingOptions(
                 token.id,
@@ -103,11 +99,20 @@ const AddressForm = () => {
                 Shipping Address
             </Typography>
             <FormProvider {...methods}>
-                <form onSubmit={() => console.log("submitted form")}>
+                <form
+                    onSubmit={methods.handleSubmit((data) => {
+                        next({
+                            ...data,
+                            shippingCountry,
+                            shippingSubdivision,
+                            shippingOption,
+                        });
+                    })}
+                >
                     <Grid container spacing={3}>
                         <FormInput name="firstName" label="First name" />
                         <FormInput name="lastName" label="Last name" />
-                        <FormInput name="address1" label="Address" />
+                        <FormInput name="address1" label="Address line 1" />
                         <FormInput name="email" label="Email" />
                         <FormInput name="city" label="City" />
                         <FormInput name="zip" label="ZIP / Postal code" />
@@ -176,7 +181,13 @@ const AddressForm = () => {
                         <Link href="/shoppingCart">
                             <Button variant="outlined">Back to Cart</Button>
                         </Link>
-                        <Button variant="contained">Next</Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                        >
+                            Next
+                        </Button>
                     </div>
                 </form>
             </FormProvider>
